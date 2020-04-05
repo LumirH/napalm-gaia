@@ -12,9 +12,10 @@ documented functions were successfully tested against:
  - R80.10 Gaia
  - R80.20 Gaia  
  - R80.30 Gaia
+ - R80.40 Gaia
  
 untested yet:
- - R80.40
+
  
 not supported:
  - R77.30 SPLAT
