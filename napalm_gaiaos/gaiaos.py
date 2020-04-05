@@ -432,7 +432,6 @@ class GaiaOSDriver(NetworkDriver):
             output = self.device.send_command(command)
             if len(output) <= 2:
                 raise ValueError('firewall module not enabled')
-            print(output)
             rows = output.split('\n')
             policy = {}
             policy_value = []
