@@ -19,11 +19,7 @@ untested yet:
  
 not supported:
  - R77.30 SPLAT
- 
 
- 
- 
- 
 ## install
  
     pip install napalm-gaia
@@ -32,6 +28,10 @@ not supported:
 
 https://napalm-gaia.readthedocs.io/en/latest
 
+## contribute
+
+If you find a bug please use the issue tracker.
+If you want to volunteer or contribute patches please open a PR or get in touch with us. 
 
 ## contact
 
