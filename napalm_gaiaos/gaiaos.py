@@ -31,6 +31,7 @@ class GaiaOSDriver(NetworkDriver):
         self.expert_password = '\n'
         self.timeout = timeout
         self.vsx_state = False
+        self.vsid = 0
         self.optional_args = optional_args
         if self.optional_args is not None:
             if 'secret' in optional_args:
