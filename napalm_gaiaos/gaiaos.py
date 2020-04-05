@@ -5,6 +5,7 @@ import re
 import socket
 import ipaddress
 import napalm
+import string
 from napalm.base.base import NetworkDriver
 from napalm.base.exceptions import ConnectionException, SessionLockedException,\
                                    MergeConfigException, ReplaceConfigException,\
@@ -29,6 +30,7 @@ class GaiaOSDriver(NetworkDriver):
         self.password = password
         self.expert_password = '\n'
         self.timeout = timeout
+        self.vsx_state = False
         self.optional_args = optional_args
         if self.optional_args is not None:
             if 'secret' in optional_args:
@@ -37,6 +39,8 @@ class GaiaOSDriver(NetworkDriver):
     def open(self):
         device_type = 'checkpoint_gaia'
         self.device = self._netmiko_open(device_type, netmiko_optional_args=self.optional_args)
+        self.vsx_state = self._check_vsx_state()
+
 
     def close(self):
         self._exit_expert_mode()
@@ -427,7 +431,8 @@ class GaiaOSDriver(NetworkDriver):
             output = self.device.send_command(command)
             if len(output) <= 2:
                 raise ValueError('firewall module not enabled')
-            rows = output.read().split('\n')
+            print(output)
+            rows = output.split('\n')
             policy = {}
             policy_value = []
             for row in rows:
@@ -651,6 +656,18 @@ class GaiaOSDriver(NetworkDriver):
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
 
+    def set_virtual_system(self, vsid: int) -> bool:
+        if self.vsx_state == True:
+            if isinstance(vsid, int):
+                self.vsid = vsid
+                self._set_virtual_system(vsid)
+            else:
+                raise ValidationException('vsid must be <int>')
+        else:
+            raise ValidationException('VSX not enabled')
+
+
+
     def _enter_expert_mode(self) -> bool:
         """
             :return: bool
@@ -676,6 +693,8 @@ class GaiaOSDriver(NetworkDriver):
         try:
             if self._check_expert_mode() is True:
                 self.device.send_command('exit', expect_string=r'>')
+                if self.vsx_state == True:
+                    self.set_virtual_system(self.vsid)
                 if self._check_expert_mode() is False:
                     return True
                 else:
@@ -1003,7 +1022,7 @@ class GaiaOSDriver(NetworkDriver):
             :return: bool
         """
         try:
-            if self._check_vsx_state() is True:
+            if self.vsx_state is True:
                 if self._check_expert_mode() is True:
                     command = 'vsenv {}'.format(vsid)
                 else:
