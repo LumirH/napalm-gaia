@@ -3,6 +3,7 @@
 - rework get_firewall_policy()
 - additional exception handling for get_facts()
 - add get_route_to()
+- added hook for dynamic cli
 0.0.15
 - fixed issues in get facts()
 0.0.14

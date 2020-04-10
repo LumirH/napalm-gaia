@@ -42,7 +42,6 @@ class GaiaOSDriver(NetworkDriver):
         self.device = self._netmiko_open(device_type, netmiko_optional_args=self.optional_args)
         self.vsx_state = self._check_vsx_state()
 
-
     def close(self):
         self._exit_expert_mode()
         self._netmiko_close()
@@ -75,9 +74,8 @@ class GaiaOSDriver(NetworkDriver):
                         output[cmd] = self.device.send_command(cmd)
                     else:
                         raise TypeError(
-                            'Expected <class \'str\'> not a {}'.format(
-                            type(cmd)
-                            ))
+                            'Expected <class \'str\'> not a {}'.format(type(cmd))
+                            )
             else:
                 raise TypeError(
                     'Expected <class \'list\'> not a {}'.format(
@@ -666,8 +664,6 @@ class GaiaOSDriver(NetworkDriver):
         else:
             raise ValidationException('VSX not enabled')
 
-
-
     def _enter_expert_mode(self) -> bool:
         """
             :return: bool
@@ -680,11 +676,12 @@ class GaiaOSDriver(NetworkDriver):
                     self.device.set_base_prompt(r'#')
                     self.device.send_command(r'unset TMOUT')
                 return self._check_expert_mode()
-
+        except OSError as e:
+            raise OSError('unable to enter expert mode - was the expert password set?')
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
         except Exception as e:
-            raise RuntimeError(e)
+            return False
 
     def _exit_expert_mode(self) -> bool:
         """
@@ -910,16 +907,19 @@ class GaiaOSDriver(NetworkDriver):
         # need to doublecheck with realworld deployments(to less uptime in lab)
         # disable meanwhile and set to zero
         uptime = float(0)
+        # -> command
         hostname = self.device.send_command('show hostname')
         dns_suffix = self.device.send_command('show dns suffix')
         if re.match('$', dns_suffix) is None:
             fqdn = hostname + '.' + dns_suffix
         else:
             fqdn = hostname
+        # -> command
         output = self.device.send_command('show version product')
         output = re.match('.*(Check Point Gaia R\d+\.\d+)\s*$', output)
         if output is not None:
             os_version = output.group(1)
+            # -> command
             output = self.device.send_command('show version os kernel')
             output = re.match('OS\skernel\sversion\s(.*)$', output)
             if output is not None:
@@ -930,6 +930,8 @@ class GaiaOSDriver(NetworkDriver):
         # appliances work with('clish::cpstat -os'). platform check required (use uuid if sn is 'none'?)
         # set sn to empty string meanwhile
         #
+
+        # -> command
         output = self.device.send_command('cpstat os')
         retdict['model'] = 'unknown'
         for line in str(output).split('\n'):
@@ -1004,10 +1006,11 @@ class GaiaOSDriver(NetworkDriver):
         """
             :return: bool
         """
-        vsx_regex = r'^\|.\d+\|'
-        command = 'cpstat -f stat vsx'
+        vsx_regex = r'\w+\s[Ee]nabled'
+        command = 'show vsx'
         try:
             output = self.device.send_command(command)
+            print(output)
             if re.search(vsx_regex, output, re.M):
                 return True
             else:
