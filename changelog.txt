@@ -3,8 +3,8 @@
 - rework get_firewall_policy()
 - additional exception handling for get_facts()
 - add get_route_to()
-- added hook for dynamic cli
-- added handling for user accounts using bash as default shell
+- added hook for dynamic cli(sk144112)
+- added handling for user-sessions which use bash as default shell
 0.0.15
 - fixed issues in get facts()
 0.0.14
