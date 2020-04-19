@@ -1069,8 +1069,6 @@ class GaiaOSDriver(NetworkDriver):
     def _get_cpenv(self):
         self._get_default_shell()
         self.vsx_state = self._check_vsx_state()
-        dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
-        clish_re = re.compile(r'[Uu]sage.*')
 
 
     def _get_default_shell(self):
@@ -1078,10 +1076,22 @@ class GaiaOSDriver(NetworkDriver):
             self.shell_default_clish = True
 
     def _check_for_dclish(self):
+        '''
+            check if dynamic clish is installed(refer sk144112)
+
+        :return:
+        '''
+        tmpstr = ''
         dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
         clish_re = re.compile(r'[Uu]sage.*')
         if self.shell_default_clish is True:
-            tmpstr = self.device.send_command('cplic')
+
+            try:
+                tmpstr = self.device.send_command('cplic')
+            except (socket.error, EOFError) as e:
+                raise ConnectionClosedException(str(e))
+            except Exception as e:
+                RuntimeError(e)
             if re.match(dclish_re, tmpstr) is not None:
                 self.dclish = True
             elif re.match(clish_re, tmpstr) is not None:
@@ -1090,7 +1100,22 @@ class GaiaOSDriver(NetworkDriver):
                 msg = r'unable to detect clish version'
                 raise RuntimeError(msg)
         else:
-            pass
+            try:
+                self.device.send_command('clish', expect_string=r'>')
+                self.device.send_command('lock database override')
+                tmpstr = self.device.send_command('cplic')
+            except (socket.error, EOFError) as e:
+                raise ConnectionClosedException(str(e))
+            except Exception as e:
+                RuntimeError(e)
+            if re.match(dclish_re, tmpstr) is not None:
+                self.dclish = True
+            elif re.match(clish_re, tmpstr) is not None:
+                self.dclish = False
+            else:
+                msg = r'unable to detect clish version'
+                raise RuntimeError(msg)
+
 
     ##########################################################################################
     # """                               the tbd section                                  """ #
