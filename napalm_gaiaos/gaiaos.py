@@ -23,10 +23,11 @@ import ipaddress
 import napalm
 import string
 from napalm.base.base import NetworkDriver
-from napalm.base.exceptions import ConnectionException, SessionLockedException,\
-                                   MergeConfigException, ReplaceConfigException,\
-                                   CommandErrorException, ConnectionClosedException,\
-                                   ValidationException
+from napalm.base.exceptions import ConnectionException, SessionLockedException, \
+    MergeConfigException, ReplaceConfigException, \
+    CommandErrorException, ConnectionClosedException, \
+    ValidationException
+
 
 class GaiaOSDriver(NetworkDriver):
     """
@@ -37,10 +38,10 @@ class GaiaOSDriver(NetworkDriver):
     """
 
     def __init__(self, hostname,
-                    username='',
-                    password='',
-                    timeout=10,
-                    optional_args=None):
+                 username='',
+                 password='',
+                 timeout=10,
+                 optional_args=None):
         self.hostname = hostname
         self.username = username
         self.password = password
@@ -60,11 +61,10 @@ class GaiaOSDriver(NetworkDriver):
         self.device = self._netmiko_open(device_type, netmiko_optional_args=self.optional_args)
         self._get_cpenv()
 
-
     def close(self):
         self._exit_expert_mode()
         self._netmiko_close()
-    
+
     def cli(self, commands: list) -> dict:
         """
         | Will execute a list of commands and return the output in a dictionary format.
@@ -94,17 +94,17 @@ class GaiaOSDriver(NetworkDriver):
                     else:
                         raise TypeError(
                             'Expected <class \'str\'> not a {}'.format(type(cmd))
-                            )
+                        )
             else:
                 raise TypeError(
                     'Expected <class \'list\'> not a {}'.format(
                         type(commands)
-                        )
                     )
+                )
             return output
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
-    
+
     def get_users(self, **kwargs) -> dict:
         """
             | Returns a dictionary with the configured users.
@@ -267,7 +267,7 @@ class GaiaOSDriver(NetworkDriver):
                                     'state': str(table_entry.group(5))}
                                    )
         return arp_entries
-      
+
     def get_config(self, retrieve='all') -> dict:
         """
         | Get host configuration. Returns a string delimited with a '\n' for further parsing.
@@ -454,7 +454,7 @@ class GaiaOSDriver(NetworkDriver):
             policy_value = []
             for row in rows:
                 if any(s in row for s in [m for m in matchstr]):
-                    policy_value.append((row.split(':',1)[1].strip()))
+                    policy_value.append((row.split(':', 1)[1].strip()))
             policy.update(
                 {
                     'name': str(policy_value[0]),
@@ -568,7 +568,7 @@ class GaiaOSDriver(NetworkDriver):
                     interface_table[item[0]]['mtu'] = re.findall(RE_NICDATA['mtu'], line)[0]
                 if re.match(RE_NICDATA['description'], line) is not None:
                     interface_table[item[0]]['description'] = re.findall(RE_NICDATA['description'], line)[0]
-                    if re.match(r'^\s+$',  interface_table[item[0]]['description']):
+                    if re.match(r'^\s+$', interface_table[item[0]]['description']):
                         interface_table[item[0]]['description'] = ''
                 if re.match(RE_NICDATA['mac_address'], line) is not None:
                     interface_table[item[0]]['mac_address'] = re.findall(RE_NICDATA['mac_address'], line)[0]
@@ -674,7 +674,7 @@ class GaiaOSDriver(NetworkDriver):
             raise ConnectionClosedException(str(e))
 
     def set_virtual_system(self, vsid: int) -> bool:
-        if self.vsx_state == True:
+        if self.vsx_state is True:
             if isinstance(vsid, int):
                 self.vsid = vsid
                 self._set_virtual_system(vsid)
@@ -709,7 +709,7 @@ class GaiaOSDriver(NetworkDriver):
         try:
             if self._check_expert_mode() is True:
                 self.device.send_command('exit', expect_string=r'>')
-                if self.vsx_state == True:
+                if self.vsx_state is True:
                     self.set_virtual_system(self.vsid)
                 if self._check_expert_mode() is False:
                     return True
@@ -869,7 +869,7 @@ class GaiaOSDriver(NetworkDriver):
                     mobj = re.match(re_output_rtt, line)
                     if mobj is not None:
                         val = float(mobj.group(2))
-                        values.append({ 'ip-address': destination, 'rtt': val})
+                        values.append({'ip-address': destination, 'rtt': val})
                         packets_sent += 1
                     mobj = re.match(re_output_rtt_unreachable, line)
                     if mobj is not None:
@@ -880,14 +880,14 @@ class GaiaOSDriver(NetworkDriver):
                 response['success'] = {}
                 response['success']['results'] = []
                 rttstats = re.match(re_stats_rtt, output[-1])
-                response = { 'probes_sent': packets_sent,
-                    'packet_loss': packets_lost,
-                    'rtt_min': rttstats.group(1),
-                    'rtt_max': rttstats.group(3),
-                    'rtt_avg': rttstats.group(2),
-                    'rtt_stddev': rttstats.group(4),
-                    'results' : values
-                }
+                response = {'probes_sent': packets_sent,
+                            'packet_loss': packets_lost,
+                            'rtt_min': rttstats.group(1),
+                            'rtt_max': rttstats.group(3),
+                            'rtt_avg': rttstats.group(2),
+                            'rtt_stddev': rttstats.group(4),
+                            'results': values
+                            }
                 return response
         else:
             raise ValueError('invalid host format')
@@ -1041,7 +1041,7 @@ class GaiaOSDriver(NetworkDriver):
                 return False
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
-    
+
     def _set_virtual_system(self, vsid: int) -> bool:
         """
             | Switch to VSX context. Raises RuntimeError if failed.
@@ -1067,9 +1067,10 @@ class GaiaOSDriver(NetworkDriver):
             raise ConnectionClosedException(str(e))
 
     def _get_cpenv(self):
+        self._get_default_shell()
         dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
         clish_re = re.compile(r'[Uu]sage.*')
-        if self._check_expert_mode() is False:
+        if self.shell_default_clish is True:
             self.vsx_state = self._check_vsx_state()
             tmpstr = self.device.send_command('cplic')
             if re.match(dclish_re, tmpstr) is not None:
@@ -1077,11 +1078,14 @@ class GaiaOSDriver(NetworkDriver):
             elif re.match(clish_re, tmpstr) is not None:
                 self.dclish = False
             else:
-                msg=r'unable to detect clish version'
+                msg = r'unable to detect clish version'
                 raise RuntimeError(msg)
         else:
             pass
 
+    def _get_default_shell(self):
+        if self._check_expert_mode() is False:
+            self.shell_default_clish = True
 
     ##########################################################################################
     # """                               the tbd section                                  """ #
@@ -1303,7 +1307,7 @@ class GaiaOSDriver(NetworkDriver):
         """
         raise NotImplementedError
 
-    def load_merge_candidate(self,  **kwargs):
+    def load_merge_candidate(self, **kwargs):
         """
             not implemented yet
 
