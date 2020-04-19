@@ -6,7 +6,7 @@ This driver is experimental, check the docs what is possible at the moment.
 
 ## news
 
-version 0.1.0 released
+version 0.1.0 released adding:
  - vsx support
  - support for Dynamic Clish(sk144112)
  - support for devices using bash as default shell.
