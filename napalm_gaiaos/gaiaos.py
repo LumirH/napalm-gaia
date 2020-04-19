@@ -1070,7 +1070,6 @@ class GaiaOSDriver(NetworkDriver):
         dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
         clish_re = re.compile(r'[Uu]sage.*')
         if self._check_expert_mode() is False:
-
             self.vsx_state = self._check_vsx_state()
             tmpstr = self.device.send_command('cplic')
             if re.match(dclish_re, tmpstr) is not None:
@@ -1080,7 +1079,8 @@ class GaiaOSDriver(NetworkDriver):
             else:
                 msg=r'unable to detect clish version'
                 raise RuntimeError(msg)
-
+        else:
+            pass
 
 
     ##########################################################################################
