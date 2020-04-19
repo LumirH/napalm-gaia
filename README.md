@@ -6,8 +6,12 @@ This driver is experimental, check the docs what is possible at the moment.
 
 ## news
 
-preparing release 0.1.0 including support for R80.40, VSX,<br>
- Dynamic Clish and setups which use bash as default shell.
+version 0.1.0 released
+ - vsx support
+ - support for Dynamic Clish(sk144112)
+ - support for devices using bash as default shell.
+ - added get_route_to() functionality
+ - minor adjustments in exception handling
 
 ## Compatibility
 
@@ -29,10 +33,13 @@ not supported:
 
 https://napalm-gaia.readthedocs.io/en/latest
 
-## contribute
+## Bug Reports
 
-If you find a bug please use the issue tracker.
-If you want to volunteer or contribute patches please open a PR or get in touch with us. 
+Please use the issuetracker.
+
+## Contribute
+
+If you want to volunteer or contribute patches just open a PR or get in touch with us. 
 
 ## contact
 
