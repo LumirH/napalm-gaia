@@ -7,6 +7,7 @@ This driver is experimental, check the docs what is possible at the moment.
 ## news
 
 latest version 0.1.0 adding:
+ - R80.40 support
  - vsx support
  - support for Dynamic Clish(sk144112)  
  - support for devices using bash as default shell.
