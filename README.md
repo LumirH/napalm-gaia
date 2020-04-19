@@ -4,6 +4,11 @@ Unofficial CheckPoint GaiaOS driver-plugin for NAPALM (Network Automation and Pr
 Certain commands will require expert password. <br>
 This driver is experimental, check the docs what is possible at the moment.
 
+## news
+
+preparing release 0.1.0 including support for R80.40, VSX,<br>
+ Dynamic Clish and setups which use bash as default shell.
+
 ## Compatibility
 
 documented functions were successfully tested against:

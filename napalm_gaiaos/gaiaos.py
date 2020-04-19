@@ -1068,8 +1068,8 @@ class GaiaOSDriver(NetworkDriver):
 
     def _get_cpenv(self):
         self._get_default_shell()
+        self._check_for_dclish()
         self.vsx_state = self._check_vsx_state()
-
 
     def _get_default_shell(self):
         '''
