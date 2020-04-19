@@ -1087,7 +1087,6 @@ class GaiaOSDriver(NetworkDriver):
             check if dynamic clish is installed(refer sk144112)
             and sets "self.dclish"
 
-
         :return: None
         '''
         tmpstr = ''
