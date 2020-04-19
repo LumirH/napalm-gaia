@@ -37,16 +37,18 @@ class GaiaOSDriver(NetworkDriver):
     """
 
     def __init__(self, hostname,
-            username='',
-            password='',
-            timeout=10,
-            optional_args=None):
+                    username='',
+                    password='',
+                    timeout=10,
+                    optional_args=None):
         self.hostname = hostname
         self.username = username
         self.password = password
         self.expert_password = '\n'
         self.timeout = timeout
         self.vsx_state = False
+        self.dclish = False
+        self.shell_default_clish = True
         self.vsid = 0
         self.optional_args = optional_args
         if self.optional_args is not None:
@@ -56,7 +58,8 @@ class GaiaOSDriver(NetworkDriver):
     def open(self):
         device_type = 'checkpoint_gaia'
         self.device = self._netmiko_open(device_type, netmiko_optional_args=self.optional_args)
-        self.vsx_state = self._check_vsx_state()
+        self._get_cpenv()
+
 
     def close(self):
         self._exit_expert_mode()
@@ -733,6 +736,12 @@ class GaiaOSDriver(NetworkDriver):
         except Exception as e:
             raise RuntimeError(e)
 
+    def _enter_clish_mode(self):
+        pass
+
+    def _exit_clish_mode(self):
+        pass
+
     def send_clish_cmd(self, cmd: str) -> str:
         """
             send clish command
@@ -1026,7 +1035,6 @@ class GaiaOSDriver(NetworkDriver):
         command = 'show vsx'
         try:
             output = self.device.send_command(command)
-            print(output)
             if re.search(vsx_regex, output, re.M):
                 return True
             else:
@@ -1059,7 +1067,21 @@ class GaiaOSDriver(NetworkDriver):
             raise ConnectionClosedException(str(e))
 
     def _get_cpenv(self):
-        pass
+        dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
+        clish_re = re.compile(r'[Uu]sage.*')
+        if self._check_expert_mode() is False:
+
+            self.vsx_state = self._check_vsx_state()
+            tmpstr = self.device.send_command('cplic')
+            if re.match(dclish_re, tmpstr) is not None:
+                self.dclish = True
+            elif re.match(clish_re, tmpstr) is not None:
+                self.dclish = False
+            else:
+                msg=r'unable to detect clish version'
+                raise RuntimeError(msg)
+
+
 
     ##########################################################################################
     # """                               the tbd section                                  """ #
