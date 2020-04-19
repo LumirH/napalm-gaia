@@ -1072,14 +1072,23 @@ class GaiaOSDriver(NetworkDriver):
 
 
     def _get_default_shell(self):
+        '''
+            checks if default shell is bash or clish
+            and sets "self.shell_default_clish"
+
+        :return: None
+        '''
+
         if self._check_expert_mode() is False:
             self.shell_default_clish = True
 
     def _check_for_dclish(self):
         '''
             check if dynamic clish is installed(refer sk144112)
+            and sets "self.dclish"
 
-        :return:
+
+        :return: None
         '''
         tmpstr = ''
         dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
