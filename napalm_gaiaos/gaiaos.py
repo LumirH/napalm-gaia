@@ -62,6 +62,11 @@ class GaiaOSDriver(NetworkDriver):
         device_type = 'checkpoint_gaia'
         self.device = self._netmiko_open(device_type, netmiko_optional_args=self.optional_args)
         self._get_cpenv()
+        # if default shell is bash, switch to clish
+        if self.shell_default_is_clish is False:
+            self.device.send_command('clish', expect_string=r'>')
+            # disable terminal paging
+            self.device.send_command('set clienv rows 0')
 
     def close(self):
         self._exit_expert_mode()
@@ -495,7 +500,6 @@ class GaiaOSDriver(NetworkDriver):
             raise RuntimeError(str(e))
 
     def get_interfaces(self) -> dict:
-
         """
                     | Get interface details.
                     | last_flapped is not implemented and will return -1.
@@ -536,11 +540,9 @@ class GaiaOSDriver(NetworkDriver):
                       }
         interface_table = {}
         try:
-            self.device.send_command('set clienv rows 0')
             output = self.device.send_command('show interfaces all')
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
-
         output = str(output).split('Interface ')
         for item in output:
             if len(item) == 0:
@@ -603,7 +605,6 @@ class GaiaOSDriver(NetworkDriver):
                       }
         interface_table = {}
         try:
-            self.device.send_command('set clienv rows 0')
             output = self.device.send_command('show interfaces all')
         except (socket.error, EOFError) as e:
             raise ConnectionClosedException(str(e))
@@ -766,9 +767,12 @@ class GaiaOSDriver(NetworkDriver):
             :param cmd: str
             :return: str
         """
-        if self._enter_expert_mode() is True:
+        if self._enter_expert_mode() is True and self.shell_default_is_clish is True:
             output = self.device.send_command(cmd)
             self._exit_expert_mode()
+            return output
+        elif self._enter_expert_mode() is True and self.shell_default_is_clish is False:
+            output = self.device.send_command(cmd)
             return output
         else:
             raise RuntimeError('unable to enter expert mode')
@@ -833,7 +837,7 @@ class GaiaOSDriver(NetworkDriver):
                 }
 
         """
-
+        if 'vrf'
         try:
             self.device.send_command('\t')
         except (socket.error, EOFError) as e:
@@ -1075,9 +1079,9 @@ class GaiaOSDriver(NetworkDriver):
         '''
         self._get_default_shell()
         self._check_for_dclish()
-        self.vsx_state = self._check_vsx_state()
         self._get_deployment_type()
-
+        if self.is_security_gateway is True:
+            self.vsx_state = self._check_vsx_state()
 
     def _get_deployment_type(self):
         re_sg = re.compile(r'.*not\s a\sFireWall-1\smodule.*')
@@ -1098,7 +1102,6 @@ class GaiaOSDriver(NetworkDriver):
             self.is_security_gateway = True
         if re.match(re_fwm, tmpstr_fwm) is None:
             self.is_security_management = True
-
 
     def _get_default_shell(self):
         '''
