@@ -1084,13 +1084,12 @@ class GaiaOSDriver(NetworkDriver):
     def _get_default_shell(self):
         '''
             checks if default shell is bash or clish
-            and sets "self.shell_default_clish"
+            and sets "self.shell_default_is_clish"
 
         :return: None
         '''
-
-        if self._check_expert_mode() is False:
-            self.shell_default_is_clish = True
+        if self._check_expert_mode() is True:
+            self.shell_default_is_clish = False
 
     def _check_for_dclish(self):
         '''
