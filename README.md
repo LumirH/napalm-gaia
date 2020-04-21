@@ -10,7 +10,7 @@ latest version 0.1.0 adding:
  - R80.40 support
  - vsx support
  - support for Dynamic Clish(sk144112)  
- - support for devices using bash as default shell.
+ - support for devices which are configured with bash as default shell.
  - added get_route_to() functionality
  - minor adjustments in exception handling
 
