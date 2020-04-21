@@ -49,7 +49,7 @@ class GaiaOSDriver(NetworkDriver):
         self.timeout = timeout
         self.vsx_state = False
         self.dclish = False
-        self.shell_default_clish = True
+        self.shell_default_is_clish = True
         self.vsid = 0
         self.optional_args = optional_args
         if self.optional_args is not None:
@@ -1067,9 +1067,19 @@ class GaiaOSDriver(NetworkDriver):
             raise ConnectionClosedException(str(e))
 
     def _get_cpenv(self):
+        '''
+
+
+        :return: None
+        '''
         self._get_default_shell()
         self._check_for_dclish()
         self.vsx_state = self._check_vsx_state()
+        self._get_deployment_type()
+
+
+    def _get_deployment_type(self):
+        pass
 
     def _get_default_shell(self):
         '''
@@ -1080,7 +1090,7 @@ class GaiaOSDriver(NetworkDriver):
         '''
 
         if self._check_expert_mode() is False:
-            self.shell_default_clish = True
+            self.shell_default_is_clish = True
 
     def _check_for_dclish(self):
         '''
