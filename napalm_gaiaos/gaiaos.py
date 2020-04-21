@@ -51,6 +51,8 @@ class GaiaOSDriver(NetworkDriver):
         self.dclish = False
         self.shell_default_is_clish = True
         self.vsid = 0
+        self.is_security_gateway = False
+        self.is_security_management = False
         self.optional_args = optional_args
         if self.optional_args is not None:
             if 'secret' in optional_args:
@@ -1069,7 +1071,6 @@ class GaiaOSDriver(NetworkDriver):
     def _get_cpenv(self):
         '''
 
-
         :return: None
         '''
         self._get_default_shell()
@@ -1079,7 +1080,25 @@ class GaiaOSDriver(NetworkDriver):
 
 
     def _get_deployment_type(self):
-        pass
+        re_sg = re.compile(r'.*not\s a\sFireWall-1\smodule.*')
+        re_fwm = re.compile(r'.*not\sa\sSecurity\sManagement\sServer.*')
+        tmpstr_sg = ''
+        tmpstr_fwm = ''
+        try:
+            if self.dclish is True:
+                tmpstr_sg = self.device.send_command('show security-gateway policy')
+            else:
+                tmpstr_sg = self.device.send_command('fw ver')
+            tmpstr_fwm = self.device.send_command('fwm ver')
+        except (socket.error, EOFError) as e:
+            raise ConnectionClosedException(str(e))
+        except Exception as e:
+            RuntimeError(e)
+        if re.match(re_sg, tmpstr_sg) is None:
+            self.is_security_gateway = True
+        if re.match(re_fwm, tmpstr_fwm) is None:
+            self.is_security_management = True
+
 
     def _get_default_shell(self):
         '''
@@ -1099,10 +1118,9 @@ class GaiaOSDriver(NetworkDriver):
         :return: None
         '''
         tmpstr = ''
-        dclish_re = re.compile(r'[Dd]epricated.*sk144112.*')
+        dclish_re = re.compile(r'.*[Dd]eprecated\s.*sk144112.*')
         clish_re = re.compile(r'[Uu]sage.*')
-        if self.shell_default_clish is True:
-
+        if self.shell_default_is_clish is True:
             try:
                 tmpstr = self.device.send_command('cplic')
             except (socket.error, EOFError) as e:
